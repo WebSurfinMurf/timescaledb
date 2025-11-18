@@ -6,11 +6,6 @@ networks:
   postgres-net:
     external: true
 
-volumes:
-  timescaledb-data:
-    external: true
-    name: timescaledb_data
-
 services:
   timescaledb:
     image: ${TIMESCALEDB_IMAGE:-timescale/timescaledb:latest-pg16}
@@ -31,7 +26,7 @@ services:
       TS_TUNE_MAX_BG_WORKERS: ${TS_TUNE_MAX_BG_WORKERS:-8}
       TIMESCALEDB_TELEMETRY: ${TIMESCALEDB_TELEMETRY:-off}
     volumes:
-      - timescaledb-data:/var/lib/postgresql/data
+      - /home/administrator/projects/data/timescaledb:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB:-timescale}"]
       interval: 10s

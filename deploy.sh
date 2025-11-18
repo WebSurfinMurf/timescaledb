@@ -54,12 +54,17 @@ for network in timescaledb-net postgres-net; do
 done
 echo -e "${GREEN}✅ All required networks exist${NC}"
 
-# Check/create volume
-if ! docker volume inspect timescaledb_data &>/dev/null; then
-    echo "Creating timescaledb_data volume..."
-    docker volume create timescaledb_data
+# Check/create data directory
+DATA_DIR="/home/administrator/projects/data/timescaledb"
+if [ ! -d "$DATA_DIR" ]; then
+    echo "Creating TimescaleDB data directory..."
+    mkdir -p "$DATA_DIR"
 fi
-echo -e "${GREEN}✅ TimescaleDB data volume ready${NC}"
+
+# Ensure correct ownership (TimescaleDB runs as UID 70 inside container)
+echo "Setting correct ownership on data directory..."
+docker run --rm -v "$DATA_DIR:/target" alpine chown -R 70:70 /target
+echo -e "${GREEN}✅ TimescaleDB data directory ready${NC}"
 
 # Validate docker-compose.yml syntax
 echo ""
@@ -110,7 +115,7 @@ echo ""
 echo "Database Configuration:"
 echo "  - Admin User: ${POSTGRES_USER}"
 echo "  - Default Database: ${POSTGRES_DB:-timescale}"
-echo "  - Data Volume: timescaledb_data"
+echo "  - Data Directory: /home/administrator/projects/data/timescaledb"
 echo ""
 echo "Connection Strings:"
 echo "  - Internal: postgresql://${POSTGRES_USER}:***@timescaledb:5432/${POSTGRES_DB:-timescale}"
