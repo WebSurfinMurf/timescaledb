@@ -1,5 +1,7 @@
 # TimescaleDB Deployment
 
+> 🔀 **Session history (refocus)**: See [docs/refocus/INDEX.md](docs/refocus/INDEX.md) for incoming briefs and outbound spawns.
+
 > **For overall environment context, see: `/home/administrator/projects/AINotes/SYSTEM-OVERVIEW.md`**  
 > **Network details: `/home/administrator/projects/AINotes/network.md`**  
 > **Security configuration: `/home/administrator/projects/AINotes/security.md`**
@@ -7,13 +9,15 @@
 ## Overview
 TimescaleDB is a time-series database built on PostgreSQL, providing automatic partitioning, compression, and specialized time-series functions while maintaining full SQL compatibility. Running as a separate instance from the main PostgreSQL server on port 5433.
 
-## Current State (2025-09-05)
-- **Status**: ✅ Fully operational (2+ days uptime, healthy)
-- **Version**: TimescaleDB 2.22.0 on PostgreSQL 16.10
+## Current State (2026-06-21)
+- **Status**: ✅ Fully operational (healthy)
+- **Version**: TimescaleDB **2.28.0** on PostgreSQL 16, **pgvector 0.8.1**
+- **Image**: pinned `timescale/timescaledb:2.28.0-pg16` via `TIMESCALEDB_IMAGE` in `secrets/timescaledb.env` (was floating `latest-pg16` @ pgvector 0.7.2). Bump pre-validated: newer official tags bundle pgvector ≥0.8.x, so no custom image needed.
 - **Port**: 5433 (external), 5432 (internal Docker)
-- **Database**: 1 hypertable (sensor_data), 1 chunk, ~9.4MB size
+- **Databases**: `timescale`, `agent_memory` (vector 0.8.1), `optionsearch_db`, `tradingview_db`, **`research_db`** (owner `research_user`, vector 0.8.1 — added 2026-06-21 for the `research` platform's T0.3 substrate gate)
 - **MCP Server**: Running (stdio-based for Claude Code)
 - **Integrations**: Grafana ✅, pgAdmin ✅, MCP ✅
+- **Upgrade safety note**: image bump = shared-DB recreate (affects agent_memory/optionsearch/tradingview). Always `pg_dumpall` first (→ `backups/`, gitignored), then `./deploy.sh`, then `ALTER EXTENSION timescaledb UPDATE` in every DB + `ALTER EXTENSION vector UPDATE` where present.
 
 ## Architecture
 ```
